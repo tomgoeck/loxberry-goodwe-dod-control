@@ -1,6 +1,15 @@
-# LoxBerry Plugin: GoodWe DoD Control API (PHP + Python)
+Mit diesem Addon kannst du den **Depth of Discharge (DoD)**. Also der Wert wie weit sich deine Solarbatterie entladen darf mit Hilfe deiner Verbrauchsdaten und der voraussichtlichen PV-Leistung des morgigen Tages. Somit hast du immer die maximale Reserve im Falle eines Stromausfalls.
 
-Mit diesem LoxBerry-Plugin kannst du den **Depth of Discharge (DoD)** deines **GoodWe**-Wechselrichters per **HTTP API** auslesen und setzen.
+Beispiel: Der DOD ist standardmäßig auf 70% gesetzt. Das heißt die Batterie darf sich immer auf 30% entladen. Im Winter, in dem es kaum PV Leistung gibt, wird sich daher deine Batterie zwischen 30 und 50% Akkustand bewegen. Wäre es nicht besser den Akku zwischen 80 und 100 % zu lassen. Somit hast du bei einem Stromausfall die maximale Reserve. 
+
+Der Idealzustand wäre somit einmal am Tag genau die 100% zu erreichen, damit nicht eine Wh eingespeist wird. Und genau das versucht dieser Nodered Flow. 
+
+Es werden über die API Schnittstelle von Solcast für 2 Dächer (in meinem Fall Ost und West-Seite) die Forecast-Daten für den nächsten Tag bei Anbruch der Dunkelheit abgerufen. 
+
+
+
+
+ **GoodWe**-Wechselrichters per **HTTP API** auslesen und setzen.
 
 ✅ **GET**: aktuellen DoD auslesen  
 ✅ **SET**: DoD auf einen Wert 0–100% setzen (mit Validierung & Rückprüfung)  
@@ -88,7 +97,7 @@ Im Beispiel verwenden wir: **goodwe_discharge**.
 
 ```bash
 cd /opt/loxberry/bin/plugins
-sudo git clone https://github.com/YOUR_USERNAME/loxberry-goodwe-dod-control.git goodwe_discharge
+sudo git clone https://github.com/tom_goeck/loxberry-goodwe-dod-control.git goodwe_discharge
 cd goodwe_discharge
 ```
 
