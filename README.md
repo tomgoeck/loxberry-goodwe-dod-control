@@ -1,6 +1,6 @@
 Mit diesem Addon kannst du den **Depth of Discharge (DoD)**. Also der Wert wie weit sich deine Solarbatterie entladen darf mit Hilfe deiner Verbrauchsdaten und der voraussichtlichen PV-Leistung des morgigen Tages. Somit hast du immer die maximale Reserve im Falle eines Stromausfalls.
 
-Beispiel: Der DOD ist standardmäßig auf 70% gesetzt. Das heißt die Batterie darf sich immer auf 30% entladen. Im Winter, in dem es kaum PV Leistung gibt, wird sich daher deine Batterie zwischen 30 und 50% Akkustand bewegen. Wäre es nicht besser den Akku zwischen 80 und 100 % zu lassen. Somit hast du bei einem Stromausfall die maximale Reserve. 
+*Beispiel:* Der DOD ist standardmäßig auf 70% gesetzt. Das heißt die Batterie darf sich immer auf 30% entladen. Im Winter, in dem es kaum PV Leistung gibt, wird sich daher deine Batterie zwischen 30 und 50% Akkustand bewegen. Wäre es nicht besser den Akku zwischen 80 und 100 % zu lassen? Somit hast du bei einem Stromausfall die maximale Reserve, aber keinen Strom verschenkt.
 
 Der Idealzustand wäre somit einmal am Tag genau die 100% zu erreichen, damit nicht eine Wh eingespeist wird. Und genau das versucht dieser Nodered Flow. 
 
@@ -9,7 +9,7 @@ Es werden über die API Schnittstelle von Solcast für 2 Dächer (in meinem Fall
 
 
 
- **GoodWe**-Wechselrichters per **HTTP API** auslesen und setzen.
+ **GoodWe**-Wechselrichters per **HTTP API** auslesen und setzen:
 
 ✅ **GET**: aktuellen DoD auslesen  
 ✅ **SET**: DoD auf einen Wert 0–100% setzen (mit Validierung & Rückprüfung)  
@@ -49,7 +49,7 @@ Es werden über die API Schnittstelle von Solcast für 2 Dächer (in meinem Fall
 ---
 
 ## 2. Was ist im Repo enthalten
-Wenn du Goodwe2MQTT installiert hast auf dem Loxberry, empfehle ich es einfach in das Verzeichnis zu legen, da dort die Inverter-IP hinterlegt ist. Alternativ kannst du die Inverter IP im dod.php Script manuell festlegen. 
+Wenn du Goodwe2MQTT installiert hast auf dem Loxberry, empfehle ich es einfach in das goodwe2mqtt Verzeichnis zu legen, da dort die Inverter-IP hinterlegt ist. Alternativ kannst du die Inverter IP im dod.php Script manuell festlegen. 
 
 Struktur (mit Platzhalter `{PLUGIN_NAME}`):
 
