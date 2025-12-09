@@ -251,9 +251,3 @@ Erstetze im letzten Function Node den Pluginnamen zu zum Beispiel
 - Die API ist **ohne Authentifizierung** erreichbar.
 - **Nicht** ins Internet forwarden!
 - Zugriff im LAN einschränken (Firewall, VLAN, Reverse Proxy mit Auth).
-
----
-
-## 9. Lizenz
-
-MIT empfohlen (falls im Repo enthalten).
