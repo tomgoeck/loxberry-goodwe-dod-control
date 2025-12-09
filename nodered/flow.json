@@ -1,0 +1,231 @@
+[
+  {
+    "id": "f1a2b3c4d5e6f7a8",
+    "type": "tab",
+    "label": "Solcast Auto DoD (Public)",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "a491e976184d273a",
+    "type": "sunrise",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Berlin Sunset (Golden Hour Trigger)",
+    "lat": "52.5200",
+    "lon": "13.4050",
+    "start": "sunrise",
+    "end": "goldenHour",
+    "soff": 0,
+    "eoff": 0,
+    "sendAtStartup": false,
+    "x": 180,
+    "y": 220,
+    "wires": [
+      [],
+      [
+        "sw_payload0"
+      ]
+    ]
+  },
+  {
+    "id": "sw_payload0",
+    "type": "switch",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Trigger nur bei payload = 0",
+    "property": "payload",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "eq",
+        "v": "0",
+        "vt": "num"
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 1,
+    "x": 430,
+    "y": 220,
+    "wires": [
+      [
+        "httpRoof1",
+        "httpRoof2"
+      ]
+    ]
+  },
+  {
+    "id": "httpRoof1",
+    "type": "http request",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Solcast Rooftop 1",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "https://api.solcast.com.au/rooftop_sites/ROOFTOP_ID_1/forecasts?format=json&hours=48&period=PT30M&api_key=API_KEY_1",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 680,
+    "y": 180,
+    "wires": [
+      [
+        "fnSum1"
+      ]
+    ]
+  },
+  {
+    "id": "httpRoof2",
+    "type": "http request",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Solcast Rooftop 2",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "https://api.solcast.com.au/rooftop_sites/ROOFTOP_ID_2/forecasts?format=json&hours=48&period=PT30M&api_key=API_KEY_2",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 680,
+    "y": 260,
+    "wires": [
+      [
+        "fnSum2"
+      ]
+    ]
+  },
+  {
+    "id": "fnSum1",
+    "type": "function",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "kWh morgen Roof 1",
+    "func": "// Erwartet Solcast rooftop_sites JSON in msg.payload.forecasts\n// und summiert die Energie für morgen (lokales Datum) in kWh.\n// Ergebnis: msg.payload = kWh, msg.topic = \"roof1\"\n\nconst forecasts = msg.payload && msg.payload.forecasts;\nif (!forecasts || !Array.isArray(forecasts)) {\n    node.error(\"No forecasts array in msg.payload\", msg);\n    return null;\n}\n\nconst now = new Date();\nconst tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);\n\nfunction isSameDay(d1, d2) {\n    return d1.getFullYear() === d2.getFullYear()\n        && d1.getMonth() === d2.getMonth()\n        && d1.getDate() === d2.getDate();\n}\n\n// Dauer eines Zeitschritts in Stunden aus period (z.B. \"PT30M\")\nlet periodHours = 0.5;\nif (forecasts.length > 0 && forecasts[0].period) {\n    const p = forecasts[0].period;\n    let m;\n    if ((m = p.match(/PT(\\d+)M/))) {\n        periodHours = parseInt(m[1], 10) / 60;\n    } else if ((m = p.match(/PT(\\d+)H/))) {\n        periodHours = parseInt(m[1], 10);\n    }\n}\n\nlet sumKwh = 0;\nfor (const f of forecasts) {\n    if (!f.period_end || typeof f.pv_estimate !== \"number\") continue;\n    const d = new Date(f.period_end);\n    if (!isSameDay(d, tomorrow)) continue;\n    sumKwh += f.pv_estimate * periodHours;\n}\n\nmsg.payload = sumKwh;\nmsg.topic = \"roof1\";\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": "",
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 920,
+    "y": 180,
+    "wires": [
+      [
+        "joinForecasts"
+      ]
+    ]
+  },
+  {
+    "id": "fnSum2",
+    "type": "function",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "kWh morgen Roof 2",
+    "func": "// Erwartet Solcast rooftop_sites JSON in msg.payload.forecasts\n// und summiert die Energie für morgen (lokales Datum) in kWh.\n// Ergebnis: msg.payload = kWh, msg.topic = \"roof2\"\n\nconst forecasts = msg.payload && msg.payload.forecasts;\nif (!forecasts || !Array.isArray(forecasts)) {\n    node.error(\"No forecasts array in msg.payload\", msg);\n    return null;\n}\n\nconst now = new Date();\nconst tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);\n\nfunction isSameDay(d1, d2) {\n    return d1.getFullYear() === d2.getFullYear()\n        && d1.getMonth() === d2.getMonth()\n        && d1.getDate() === d2.getDate();\n}\n\n// Dauer eines Zeitschritts in Stunden aus period (z.B. \"PT30M\")\nlet periodHours = 0.5;\nif (forecasts.length > 0 && forecasts[0].period) {\n    const p = forecasts[0].period;\n    let m;\n    if ((m = p.match(/PT(\\d+)M/))) {\n        periodHours = parseInt(m[1], 10) / 60;\n    } else if ((m = p.match(/PT(\\d+)H/))) {\n        periodHours = parseInt(m[1], 10);\n    }\n}\n\nlet sumKwh = 0;\nfor (const f of forecasts) {\n    if (!f.period_end || typeof f.pv_estimate !== \"number\") continue;\n    const d = new Date(f.period_end);\n    if (!isSameDay(d, tomorrow)) continue;\n    sumKwh += f.pv_estimate * periodHours;\n}\n\nmsg.payload = sumKwh;\nmsg.topic = \"roof2\";\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": "",
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 920,
+    "y": 260,
+    "wires": [
+      [
+        "joinForecasts"
+      ]
+    ]
+  },
+  {
+    "id": "joinForecasts",
+    "type": "join",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Combine roofs",
+    "mode": "custom",
+    "build": "object",
+    "property": "payload",
+    "propertyType": "msg",
+    "key": "topic",
+    "joiner": "\\n",
+    "joinerType": "str",
+    "useparts": true,
+    "accumulate": false,
+    "timeout": "",
+    "count": "2",
+    "reduceRight": false,
+    "reduceExp": "",
+    "reduceInit": "",
+    "reduceInitType": "",
+    "reduceFixup": "",
+    "x": 1120,
+    "y": 220,
+    "wires": [
+      [
+        "fnCalcDod"
+      ]
+    ]
+  },
+  {
+    "id": "fnCalcDod",
+    "type": "function",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Berechne DoD & URL",
+    "func": "// Erwartet msg.payload = { roof1: kWh, roof2: kWh } vom Join-Node\n// Berechnet DoD für GoodWe auf Basis PV-Prognose, Verbrauch und Reserve\n// und baut die URL für goodwe2mqtt.\n\nconst roof1 = Number(msg.payload.roof1 || 0);\nconst roof2 = Number(msg.payload.roof2 || 0);\nconst pvTotalKwh = roof1 + roof2;\n\n// --- Konfiguration (User kann anpassen) ---\nconst BAT_KWH = 16.4;      // nutzbare Batteriekapazität\nconst LOAD_KWH = 19;       // erwarteter Tagesverbrauch\nconst RESERVE_KWH = 5;     // Reserve für Stromausfall\nconst MAXIMALER_DOD = 5;   // DoD nie kleiner als dieser Wert\n// -----------------------------------------\n\n// Wie viel Energie muss aus der Batterie kommen (alles was PV nicht deckt)\nlet missingKwh = Math.max(0, LOAD_KWH - pvTotalKwh);\n\n// Benötigte Mindest-SoC in kWh = Verbrauchsdefizit + Reserve\nlet socMinKwh = missingKwh + RESERVE_KWH;\n\n// Nicht mehr als volle Batterie\nif (socMinKwh > BAT_KWH) socMinKwh = BAT_KWH;\n\nlet socMinFrac = socMinKwh / BAT_KWH;          // 0..1\nlet socMinPercent = Math.round(socMinFrac * 100);\n\n// DoD in % (wie weit Batterie max. entladen werden darf)\nlet dod = (1 - socMinFrac) * 100;\ndod = Math.round(Math.max(0, Math.min(100, dod)));\n\n// Minimalen DoD erzwingen\nif (dod <= MAXIMALER_DOD) {\n    dod = MAXIMALER_DOD;\n}\n\nmsg.payload = {\n    pv_kwh_roof1: roof1,\n    pv_kwh_roof2: roof2,\n    pv_kwh_total: pvTotalKwh,\n    load_kwh: LOAD_KWH,\n    reserve_kwh: RESERVE_KWH,\n    soc_min_kwh: socMinKwh,\n    soc_min_percent: socMinPercent,\n    dod_percent: dod\n};\n\n// HTTP Request für goodwe2mqtt vorbereiten (Beispiel-IP)\nmsg.method = \"GET\";\nmsg.url = \"http://192.168.1.50/plugins/YOURPLUGINNAME/dod.php?action=set&value=\" + dod;\n\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": "",
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1350,
+    "y": 220,
+    "wires": [
+      [
+        "httpDodSet",
+        "debug_out"
+      ]
+    ]
+  },
+  {
+    "id": "httpDodSet",
+    "type": "http request",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Setze GoodWe DoD",
+    "method": "use",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 1580,
+    "y": 180,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "debug_out",
+    "type": "debug",
+    "z": "f1a2b3c4d5e6f7a8",
+    "name": "Debug",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 1560,
+    "y": 260,
+    "wires": []
+  }
+]
